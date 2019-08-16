@@ -1,0 +1,28 @@
+<dataConfig>
+    <dataSource driver="oracle.jdbc.OracleDriver" url="${dataimporter.request.dummy_solr_db_url}" user="${dataimporter.request.dummy_solr_db_username}" password="${dataimporter.request.dummy_solr_db_password}" name="dummy_solr" batchSize="1000"/>
+
+   <document name="dummy_users">
+            <entity name="dummy_users" query="
+                  select rownum as id, data.* from (
+                    select user_id,
+                        name,
+                        email,
+                        listagg(city, ', ') WITHIN GROUP (ORDER BY city) as cities
+                    FROM USERS
+                    GROUP BY
+                    user_id,
+                    name,
+                    email,
+                  ) data
+                "
+                    dataSource="dummy_solr"  transformer="RegexTransformer">
+
+                  <field column="ID" name="id"/>
+                  <field column="USER_ID" name="user_id"/>
+                  <field column="full_name" name="full_name"/>
+                  <field column="EMAIL" name="email"/>
+                  <field column="CITIES" name="cities" splitBy=", "/>
+            </entity>
+
+      </document>
+</dataConfig>
